@@ -26,7 +26,7 @@ spring:
   #redisTemplate.opsForValue().set(saveOrderkye,"save-order-fail",20,TimeUnit.SECONDS);
   redis:
     database: 0
-    host: 100.13.100.117
+    host: 106.13.100.117
     port: 6378
     timeout: 2000
 #zipkin服务所在地址
