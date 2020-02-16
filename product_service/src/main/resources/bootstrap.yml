@@ -1,0 +1,57 @@
+#默认端口8080，Edit...配置的VM options:-Dserver.port=8771>git:http://localhost:9100/master/api-gateway-dev.yml高于>bootstrap.yml/application.yml
+server:
+  port: 8771
+
+#指定注册中心地址,不在git指定，在boostrap.yml指定
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  #配置中心访问出错，路径不对：修改所有的注册中心，增加下面配置
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+
+#服务的名称,不在git指定，在boostrap.yml指定
+spring:
+  application:
+    name: product-service
+  #rabbitmq+控制类注解@RefreshScope用于从git自动更新配置文件bootstrap.xml
+  rabbitmq:
+    #host: 10.0.0.11
+    host: 106.13.100.117
+    port: 5672
+    username: guest
+    password: guest
+  #zipkin服务所在地址
+  zipkin:
+    base-url: http://106.13.100.117:9411
+    sender:
+      type: web
+  #SpringCloud整合sleuth，使用zipkin时不显示服务,https://www.cnblogs.com/Dandwj/p/11179141.html,需要加
+      #sender:
+      #　　type: web
+  #配置百分比采样比，开发环境可以设置为1，表示全部，生产就用默认
+  sleuth:
+    sampler:
+      probability: 1
+  #指定从哪个配置中心读取，读取git配置，必须把application.yml改为bootstrap.yml,不在git指定，在boostrap.yml指定
+  #本地配置和远程GIT部署https://blog.csdn.net/t610654893/article/details/82893000
+  cloud:
+    config:
+      discovery:
+        service-id: CONFIG-SERVER
+        enabled: false
+      #指定git的配置文件
+      #profile: dev
+#以下是https://gitee.com/f8xn/springcloud/edit/master/api-gateway-dev.yml增加的，变量env只起标识作用
+#env: dev/test
+#branch: master/test
+
+#暴露全部的监控信息，被调用的服务接口才要加？
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+

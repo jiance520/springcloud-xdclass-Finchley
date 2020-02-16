@@ -1,0 +1,99 @@
+#默认端口8080，Edit...配置的VM options:-Dserver.port=8781>git:http://localhost:9100/master/api-gateway-dev.yml高于>bootstrap.yml/application.yml
+server:
+  port: 8781
+
+#指定注册中心地址,不在git指定，在boostrap.yml指定
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+
+#服务的名称,不在git指定，在boostrap.yml指定
+spring:
+  application:
+    name: order-service
+  #rabbitmq+控制类注解@RefreshScope用于从git自动更新配置文件bootstrap.xml
+  rabbitmq:
+    #host: 10.0.0.11
+    host: 106.13.100.117
+    port: 5672
+    username: guest
+    password: guest
+  #安装redis，不设置密码，并配置redis链接信息，总共0-15个database。用于熔断降级服务异常报警通知
+  #redisTemplate.opsForValue().set(saveOrderkye,"save-order-fail",20,TimeUnit.SECONDS);
+  redis:
+    database: 0
+    host: 100.13.100.117
+    port: 6378
+    timeout: 2000
+#zipkin服务所在地址
+  zipkin:
+    base-url: http://106.13.100.117:9411
+    sender:
+      type: web
+#配置采样百分比,开发环境可以设置为1，表示全部，生产就用默认
+  sleuth:
+    sampler:
+      probability: 1
+#先调用 http://localhost:9000/apigateway/order/api/v1/order/save?user_id=5&product_id=3&token=232serer
+#或者先调用http://localhost:8781/api/v1/order/save?product_id=5&user_id=5
+#再查看链路http://106.13.100.117:9411/zipkin/?serviceName=order-service&spanName=all&remoteServiceName=all&lookback=900000&startTs=1579771369657&endTs=1579772269657&annotationQuery=&minDuration=&limit=10&sortOrder=duration-desc
+#控制台会看到2020-01-23 17:37:38.269  INFO [order-service,78bf6f4c4943cd02,e76e112b557f8372,true] 19324 --- [derController-3] n.x.o.s.impl.ProductOrderServiceImpl
+#SpringCloud整合sleuth，使用zipkin时不显示服务,https://www.cnblogs.com/Dandwj/p/11179141.html,需要加
+      #sender:
+      #　　type: web
+  #指定从哪个配置中心读取，读取git配置，必须把application.yml改为bootstrap.yml,不在git指定，在boostrap.yml指定
+  #本地配置和远程GIT部署https://blog.csdn.net/t610654893/article/details/82893000
+  cloud:
+    config:
+      discovery:
+        service-id: CONFIG-SERVER
+        enabled: false
+      #指定git的配置文件
+      #profile: dev
+#以下是https://gitee.com/f8xn/springcloud/edit/master/api-gateway-dev.yml增加的，变量env只起标识作用
+#env: dev/test
+#branch: master/test
+
+#自定义负载均衡策略
+product-service:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+
+  #系统默认连接超进10秒，读取超时60秒。订单服务application.yml修改超时时间，默认Options超时是60秒。
+  #但是系统hystrix默认超时是1秒，以hystrix的connectTimeout为准
+#修改调用超时时间
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 2000
+        readTimeout: 1000
+  #开启feign支持hystrix，(开启的是熔断和超时限制，注意，一定要开启，但旧版本默认支持，新版本默认关闭。)
+  hystrix:
+    enabled: true
+#把hystrix超时时间禁用，不建议关闭
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        #execution.isolation.thread.timeoutInMilliseconds=4000
+        #设置超时时间
+        isolation:
+          thread:
+            timeoutInMilliseconds: 1000
+
+#暴露全部的监控信息，被调用的服务接口才要加？
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+#信号量，达到最大差发数时，后续请求被拒绝，默认10
+#execution.isolation.semaphore.maxConcurrentRequests
+

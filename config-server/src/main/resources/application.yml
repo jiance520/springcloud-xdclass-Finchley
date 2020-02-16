@@ -1,0 +1,28 @@
+#默认端口8080，Edit...配置的VM options:-Dserver.port=9100>git:http://localhost:9100/master/api-gateway-dev.yml高于>bootstrap.yml/application.yml
+server:
+  port: 9100
+
+#指定注册中心地址,不在git指定，在boostrap.yml指定
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+
+#服务名称,不在git指定，在boostrap.yml指定
+spring:
+  application:
+    name: config-server
+  #指定从哪个配置中心读取，读取git配置，必须把application.yml改为bootstrap.yml,不在git指定，在boostrap.yml指定
+  #本地配置和远程GIT部署https://blog.csdn.net/t610654893/article/details/82893000
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://gitee.com/f8xn/springcloud
+          username: jiance520@163.com
+          password: 1983love
+          timeout: 5
+          default-label: master

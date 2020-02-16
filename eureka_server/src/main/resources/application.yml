@@ -1,0 +1,24 @@
+#默认端口8080，Edit...配置的VM options:-Dserver.port=8761>git:http://localhost:9100/master/api-gateway-dev.yml高于>bootstrap.yml/application.yml
+server:
+  port: 8761
+
+#指定注册中心地址,不在git指定，在boostrap.yml指定
+eureka:
+  instance:
+    #指定运行jar包的服务器ip，10.0.0.31或106.13.100.117,或本地localhost。
+    hostname: 106.13.100.117
+    #hostname: 106.13.100.117
+  client:
+  #声明自己是个服务端
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+      #defaultZone: http://localhost:8761/eureka/
+  server:
+    enable-self-preservation: false
+
+#服务的名称,不在git指定，在boostrap.yml指定
+spring:
+  application:
+    name: eureka-server

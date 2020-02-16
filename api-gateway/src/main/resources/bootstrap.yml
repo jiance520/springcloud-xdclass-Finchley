@@ -1,0 +1,62 @@
+#默认端口8080，Edit...配置的VM options:-Dserver.port=9000>git:http://localhost:9100/master/api-gateway-dev.yml高于>bootstrap.yml/application.yml
+server:
+  port: 9000
+
+#指定注册中心地址,不在git指定，在boostrap.yml指定
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+    prefer-ip-address: true
+
+#服务的名称,不在git指定，在boostrap.yml指定
+spring:
+  application:
+    name: api-gateway
+  #rabbitmq+控制类注解@RefreshScope用于从git自动更新配置文件bootstrap.xml
+  rabbitmq:
+    #host: 10.0.0.11
+    host: 106.13.100.117
+    port: 5672
+    username: guest
+    password: guest
+  #指定从哪个配置中心读取，读取git配置，必须把application.yml改为bootstrap.yml,不在git指定，在boostrap.yml指定
+  #本地配置和远程GIT部署https://blog.csdn.net/t610654893/article/details/82893000
+  cloud:
+    config:
+      discovery:
+        service-id: CONFIG-SERVER
+        enabled: false
+      #指定git的配置文件
+      #profile: dev
+#以下是https://gitee.com/f8xn/springcloud/edit/master/api-gateway-dev.yml增加的，变量env只起标识作用
+#env: dev/test
+#branch: master/test
+
+#测试zuul,必须取消服务超时1秒，否则无法访问，#网关/环境隔离配置，注意多个服务防止被覆盖
+#自定义路径、路由转发，apigateway代替order-service
+#http://localhost:9000/apigateway/api/v1/order/save?product_id=2&user_id=4
+
+#/order-service/api/v1/order/save?user_id=2&product_id=1
+#自定义路由映射
+zuul:
+  routes:
+    order-service: /apigateway/order/**
+    product-service: /apigateway/product/**
+  #通过网关配置，没有token的请求不可以使用自定义路径9000/product-service访问
+  #使用正则的方式忽略指定的服务，不对外提供接口访问。
+  #统一入口为上面的配置，其他入口忽略
+  ignored-patterns: /*-service/**
+  #经过网关过滤后，在内网中，还是可以不通过网关访问，但是外网无法访问？
+  #Cookie获取不到，处理http请求头为空的问题，token可以。
+  sensitive-headers:
+#暴露全部的监控信息，被调用的服务接口才要加？
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  # main:
+  #   allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
