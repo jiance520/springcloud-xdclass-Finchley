@@ -30,7 +30,6 @@
     <dependencies>
         <!-- web支持，SpringMVC， Servlet支持等 -->
         <!--要加，否则接口不返回数据，rundashboard不显示端口？-->
-        <!-- Sprig Boot/SpringJUnit支持 测试支持,spring-boot-starter-test中已经集成了junit4.12，spring-test-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -69,13 +68,7 @@
             <artifactId>spring-cloud-starter-bus-amqp</artifactId>
         </dependency>
 
-        <!--以下自己加的-->
-        <!--<dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>-->
+        <!--以下自己加的，加了f8xn,控制台不输出启动记录！-->
         <!--<dependency>
             <groupId>f8xn</groupId>
             <artifactId>common</artifactId>

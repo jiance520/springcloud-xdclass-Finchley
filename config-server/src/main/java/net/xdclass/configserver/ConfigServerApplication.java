@@ -1,4 +1,4 @@
-package net.xclass.configserver;
+package net.xdclass.configserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
